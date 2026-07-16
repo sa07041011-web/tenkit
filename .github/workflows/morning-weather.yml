@@ -5,10 +5,9 @@ name: 天気と災害情報をLINEに通知
 
 on:
   schedule:
-    # 時刻は「世界標準時(UTC)」で書くルール。日本時間より9時間前です。
-    - cron: "45 20 * * *" # 日本時間 朝5:45 → 天気+警報を通知
-    - cron: "0 3 * * *"   # 日本時間 昼12:00 → 警報が出ていれば通知
-  workflow_dispatch: {}   # 「Run workflow」ボタンで手動テストもできる
+    - cron: "47 19 * * *" # 日本時間 朝4:47予約
+    - cron: "13 1 * * *"  # 日本時間 昼10:13予約
+  workflow_dispatch: {}
 
 jobs:
   notify:
@@ -25,8 +24,10 @@ jobs:
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
         run: |
-          # 今の日本時間が朝(9時より前)なら morning、それ以外は noon として実行
-          HOUR=$(TZ=Asia/Tokyo date +%H)
-          if [ "$HOUR" -lt 9 ]; then MODE=morning; else MODE=noon; fi
+          if [ "${{ github.event.schedule }}" = "13 1 * * *" ]; then
+            MODE=noon
+          else
+            MODE=morning
+          fi
           echo "実行モード: $MODE"
           python weather_notify.py $MODE
